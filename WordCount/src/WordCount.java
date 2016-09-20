@@ -16,6 +16,7 @@ public class WordCount {
 	private ArrayList instru;
 	private String stopFile,outFile,readFile;
 	private String fileWord;
+	
 	public WordCount(){
 		fileWord = "";
 		stopFile = "";
@@ -32,6 +33,11 @@ public class WordCount {
 			return;
 		}		
 		wc.GetFile();
+		System.out.println(wc.fileWord);
+//		char[] cc = wc.fileWord.toCharArray();
+//		for(int i = 0;i<wc.fileWord.length();i++){
+//			System.out.print((int)cc[i]+" ");
+//		}
 		wc.OutputResultToFile();
 		
 	}
@@ -156,6 +162,78 @@ public class WordCount {
 		}
 		return num+1;
 	}
+	String FindlinesInfo(){
+		String str = "";
+		int codeLine = 0,emptyLine = 0,noteLine = 0;
+		Boolean isNewLine = true;
+		char chr[] = fileWord.toCharArray();
+		for(int i = 0;i<chr.length;i++){
+			//System.out.print((int)chr[i]+" ");
+			if(chr[i] == '/' && chr[i+1] == '/'){
+				if(isNewLine)
+				noteLine ++;
+				while(i<chr.length&&chr[i] != '\n'){
+					i++;
+				}
+				isNewLine = true;
+			}
+			else if(chr[i] == '/' && chr[i+1] == '*'){
+				i += 2;
+				while(i<chr.length&&(chr[i] != '*' || chr[i+1] != '/')){
+					if(chr[i] == '\n'){
+						noteLine ++;
+						isNewLine = true;
+					}
+					i++;
+				}
+				i+=1;
+				if(1+i<chr.length&&chr[i+1] != '\r'){
+					isNewLine = false;
+				}
+				else{
+					noteLine++;
+					i += 2;
+					isNewLine = true;
+				}
+					
+			}
+			else if(i<chr.length-1&&chr[i] != ' ' && chr[i+1] != ' ' && chr[i] != '\r' && chr[i+1] != '\r'){
+				codeLine++;
+				while(i<chr.length&&chr[i] != '\n'){
+					i++;
+				}
+				isNewLine = true;
+			}
+			else{
+                if(i<chr.length-1&&chr[i] != '\r'&&chr[i+1] != '\r'){
+					i += 2;
+				}
+				else if(i<chr.length&&chr[i] != '\r'){
+					i++;
+				}
+				while(i<chr.length&&chr[i] == ' '){
+					i++;
+				}
+				System.out.println("index为"+i);
+				if(i<chr.length&&chr[i] == '\r'){
+					if(!isNewLine){
+						noteLine++;
+					}
+					else
+						emptyLine++;
+					isNewLine =true;
+					i++;
+				}
+				else if( i == chr.length){
+					emptyLine++;
+				}
+			}
+			
+		}
+		
+		str += "代码行/空行/注释行:"+codeLine+"/"+emptyLine+"/"+noteLine+"/";
+		return str;
+	}
 	void OutputResultToFile() throws IOException{
 		String result = "";
 		for(int num = 0;num < instru.size()-1;num++){
@@ -163,6 +241,7 @@ public class WordCount {
 			case "-c":result += readFile+",字符数量为："+FindCharacterNum()+"\n";break;
 			case "-w":result += readFile+",单词数量为："+FindWordNum()+"\n";break;
 			case "-l":result += readFile+",总行数为："+FindRowlineNum()+"\n";break;
+			case "-a":result += readFile+","+FindlinesInfo()+"\n";break;
 			}
 		}
 		File f = new File(outFile);
