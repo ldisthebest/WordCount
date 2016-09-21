@@ -15,30 +15,36 @@ public class WordCount {
 	private ArrayList keyWord;
 	private ArrayList instru;
 	private ArrayList stopWord;
-	private String stopFile,outFile,readFile;
-	private String fileWord;
+	private ArrayList listFiles;
+	//private ArrayList readFile;
+	private String stopFile,outFile,listPath;
+	private ArrayList fileWord;
 	
 	public WordCount(){
-		fileWord = "";
 		stopFile = "";
 		outFile = "";
-		readFile = "";
+		listPath = "";
 		stopWord = new ArrayList<String>();
 		keyWord = new ArrayList<String>();
 		instru = new ArrayList<String>();
-
+        listFiles = new ArrayList<String>();
+       // readFile = new ArrayList<String>();
+        fileWord = new ArrayList<String>();
 	}
 	
 	public static void main(String[] args) throws IOException{
 		WordCount wc = new WordCount();
 		if(!wc.InputBaseInstruction()){
 			return;
-		}		
+		}
+		if(!wc.listPath.equals("")){			
+			wc.GetFileList(wc.listPath);
+		}
+
 		wc.GetFile();
 		wc.OutputResultToFile();
-		for(int i = 0;i<wc.stopWord.size();i++){
-			System.out.println(wc.stopWord.get(i));
-		}
+
+
 	}
 	Boolean InputBaseInstruction() throws IOException{
 		
@@ -83,11 +89,37 @@ public class WordCount {
 				outFile = (String)keyWord.get(i);
 			}
 			else{
-				readFile = (String)keyWord.get(i);
+				//String filePath = (String)keyWord.get(i);
+				for(int index = 0;index<keyWord.get(i).toString().length();index++){
+					if(keyWord.get(i).toString().charAt(index) == '*'){
+						listPath = GetListPath((String)keyWord.get(i));
+						break;
+					}
+				}	
+				if(listPath.equals("")){
+					listFiles.add((String)keyWord.get(i));
+				}
 			}
 		}
 
 		return true;
+	}
+	String GetListPath(String path){
+		String str = "";
+		for(int index = 0;index<path.length();index++){
+			if(path.charAt(index) != '*'){
+				str += ""+path.charAt(index);
+			}
+			else{
+				break;
+			}
+		}
+//		String s = "";
+//		for(int i = 0;i<str.length()-1;i++){
+//			s += ""+str.charAt(i);
+//		}
+		//str.replace(str.charAt(str.length() - 1),'L');
+		return str;
 	}
 	Boolean IsNormalInstru(String s){
 		if(s.equals("-c")||s.equals("-w")||s.equals("-l")||s.equals("-a"))
@@ -112,15 +144,18 @@ public class WordCount {
 	void InstruError(){
 		System.out.println("指令格式不正确");
 	}
-	void GetFile() throws IOException{
-		InputStream file = new FileInputStream(readFile);
-		int ch = file.read();
-		while(ch != -1){
-			fileWord += ""+(char)ch;
-			ch = file.read();
-		}
-		file.close();
-		
+	void GetFile() throws IOException{	
+		for(int i = 0;i<listFiles.size();i++){	
+			String str = "";
+			InputStream file = new FileInputStream((String)listFiles.get(i));
+			int ch = file.read();
+			while(ch != -1){
+				str += ""+(char)ch;
+				ch = file.read();
+			}
+			fileWord.add(str);
+			file.close();
+		}		
 	}
 	void GetStopListWords() throws IOException{
 		InputStream file = new FileInputStream(stopFile);
@@ -145,14 +180,19 @@ public class WordCount {
 		file.close();
 		System.out.println(stopFile);
 	}
-    int FindCharacterNum(){
-		char character[] = fileWord.toCharArray();
-		int num = 0;
-		for(int i = 0;i<character.length;i++){
-			if(character[i] != '\r')
-				num ++;
-		}
-		return num;
+    String FindCharacterNum(){
+    	String str = "";
+    	for(int i = 0;i<fileWord.size();i++){
+    		char character[] = fileWord.get(i).toString().toCharArray();
+    		int num = 0;
+    		for(int j = 0;j<character.length;j++){
+    			if(character[j] != '\r')
+    				num ++;
+    		}
+    		str += listFiles.get(i).toString()+",字符数:"+num+"\n";
+    	}
+		
+		return str;
 	}
 	Boolean IsWordC(char c){
 		if(c != ' ' && c != '\n' && c != ',' &&c != '\t'&&c != '\r'){
@@ -168,137 +208,148 @@ public class WordCount {
 		}
 		return false;
 	}
-	int FindWordNum() throws IOException{
-		int num = 0;
-		String word = "";
-		char character[] = fileWord.toCharArray();
-		if(!stopFile.equals("")){
-			GetStopListWords();
-		}
-		for(int i = 0;i<character.length;i++){
-			if(IsWordC(character[i])){
-				word += ""+character[i];
-				num++;i++;
-				while(i<character.length && IsWordC(character[i])){
-					word += ""+character[i];
-					i++;
-				}
-				if(IsWordInStopList(word)){
-					num --;
-				}
-				word = "";
+	String FindWordNum() throws IOException{
+		String str = "";
+		for(int count = 0;count<fileWord.size();count++){
+			int num = 0;
+			String word = "";
+			char character[] = fileWord.get(count).toString().toCharArray();
+			if(!stopFile.equals("")){
+				GetStopListWords();
 			}
-			
+			for(int i = 0;i<character.length;i++){
+				if(IsWordC(character[i])){
+					word += ""+character[i];
+					num++;i++;
+					while(i<character.length && IsWordC(character[i])){
+						word += ""+character[i];
+						i++;
+					}
+					if(IsWordInStopList(word)){
+						num --;
+					}
+					word = "";
+				}
+				
+			}
+			str += listFiles.get(count).toString()+",单词数:"+num+"\n";
 		}
-		return num;
+
+		return str;
 		
 	}
-	int FindRowlineNum(){
-		char character[] = fileWord.toCharArray();
-		int num = 0;
-		for(int i = 0;i<character.length;i++){
-			if(character[i] == '\n')
-				num ++;
+	String FindRowlineNum(){
+		String str = "";
+		for(int count = 0;count<fileWord.size();count++){
+			char character[] = fileWord.get(count).toString().toCharArray();
+			int num = 0;
+			for(int i = 0;i<character.length;i++){
+				if(character[i] == '\n')
+					num ++;
+			}
+			str += listFiles.get(count).toString()+",总行数:"+num+"\n";
 		}
-		return num+1;
+		
+		return str;
 	}
 	String FindlinesInfo(){
 		String str = "";
-		int codeLine = 0,emptyLine = 0,noteLine = 0;
-		Boolean isNewLine = true,isNoteAfterCode = false;
-		char chr[] = fileWord.toCharArray();
-		int i;
-		for(i = 0;i<chr.length;i++){
-			//System.out.print((int)chr[i]+" ");
-			if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '/'){
-				if(isNewLine)
-				noteLine ++;
-				while(i<chr.length&&chr[i] != '\n'){
-					i++;
-				}
-				isNewLine = true;
-			}
-			else if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '*'){
-				i += 2;
-				while(i<chr.length&&(chr[i] != '*' || chr[i+1] != '/')){
-					if(chr[i] == '\n'){
-						if(isNoteAfterCode){
-							isNoteAfterCode = false;
-						}
-						else
-						noteLine ++;
-						isNewLine = true;
+		for(int count = 0;count<fileWord.size();count++){
+			int codeLine = 0,emptyLine = 0,noteLine = 0;
+			Boolean isNewLine = true,isNoteAfterCode = false;
+			char chr[] = fileWord.get(count).toString().toCharArray();
+			int i;
+			for(i = 0;i<chr.length;i++){
+				if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '/'){
+					if(isNewLine)
+					noteLine ++;
+					while(i<chr.length&&chr[i] != '\n'){
+						i++;
 					}
-					i++;
-				}
-				i++;
-				if(1+i<chr.length&&chr[i+1] != '\r'){
-					isNewLine = false;
-				}
-				else{
-					noteLine++;
-					i += 2;
 					isNewLine = true;
 				}
-					
-			}
-			else if(i<chr.length-1&&chr[i] != ' ' && chr[i+1] != ' ' && chr[i] != '\r' && chr[i+1] != '\r'){
-				if(!isNoteAfterCode)
-				codeLine++;
-				while(i<chr.length&&chr[i] != '\n'){					
-					if(i<chr.length-1&&chr[i] == '/'&&chr[i+1] == '*'){
-						isNoteAfterCode = true;
-						i--;
-						break;
-					}
-					i++;
-				}
-				if(i<chr.length&&chr[i] == '\n')
-				isNewLine = true;
-			}
-			else{
-                if(i<chr.length-1&&chr[i] != '\r'&&chr[i+1] != '\r'){
+				else if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '*'){
 					i += 2;
-				}
-				else if(i<chr.length&&chr[i] != '\r'){
-					i++;
-				}
-				while(i<chr.length&&chr[i] == ' '){
-					i++;
-				}
-				if(i<chr.length&&chr[i] == '\r'){
-					if(!isNewLine){
-						noteLine++;
+					while(i<chr.length&&(chr[i] != '*' || chr[i+1] != '/')){
+						if(chr[i] == '\n'){
+							if(isNoteAfterCode){
+								isNoteAfterCode = false;
+							}
+							else
+							noteLine ++;
+							isNewLine = true;
+						}
+						i++;
 					}
-					else
-						emptyLine++;
-					isNewLine =true;
 					i++;
-				}
-				else if( i == chr.length){
-					if(!isNewLine){
-						noteLine++;
+					if(1+i<chr.length&&chr[i+1] != '\r'){
+						isNewLine = false;
 					}
-					else
-						emptyLine++;
+					else{
+						noteLine++;
+						i += 2;
+						isNewLine = true;
+					}
+						
 				}
+				else if(i<chr.length-1&&chr[i] != ' ' && chr[i+1] != ' ' && chr[i] != '\r' && chr[i+1] != '\r'){
+					if(!isNoteAfterCode)
+					codeLine++;
+					while(i<chr.length&&chr[i] != '\n'){					
+						if(i<chr.length-1&&chr[i] == '/'&&chr[i+1] == '*'){
+							isNoteAfterCode = true;
+							i--;
+							break;
+						}
+						i++;
+					}
+					if(i<chr.length&&chr[i] == '\n')
+					isNewLine = true;
+				}
+				else{
+	                if(i<chr.length-1&&chr[i] != '\r'&&chr[i+1] != '\r'){
+						i += 2;
+					}
+					else if(i<chr.length&&chr[i] != '\r'){
+						i++;
+					}
+					while(i<chr.length&&chr[i] == ' '){
+						i++;
+					}
+					if(i<chr.length&&chr[i] == '\r'){
+						if(!isNewLine){
+							noteLine++;
+						}
+						else
+							emptyLine++;
+						isNewLine =true;
+						i++;
+					}
+					else if( i == chr.length){
+						if(!isNewLine){
+							noteLine++;
+						}
+						else
+							emptyLine++;
+					}
+				}
+				
 			}
-			
-		}
-		if(i == chr.length && chr[i - 1] == '\n'){
-			emptyLine++;
-		}
-		str += "代码行/空行/注释行:"+codeLine+"/"+emptyLine+"/"+noteLine+"/";
+			if(i == chr.length && chr[i - 1] == '\n'){
+				emptyLine++;
+			}
+			str += listFiles.get(count).toString()+",代码行/空行/注释行:"+codeLine+"/"+emptyLine+"/"+noteLine+"\n";
+		}		
 		return str;
 	}
 	void OutputResultToFile() throws IOException{
 		String result = "";
 		for(int num = 0;num < instru.size()-1;num++){
 			switch((String)instru.get(num)){
-			case "-c":result += readFile+",字符数量为："+FindCharacterNum()+"\n";break;
-			case "-w":result += readFile+",单词数量为："+FindWordNum()+"\n";break;
-			case "-l":result += readFile+",总行数为："+FindRowlineNum()+"\n";break;
-			case "-a":result += readFile+","+FindlinesInfo()+"\n";break;
+			case "-c":result += FindCharacterNum();break;
+			case "-w":result += FindWordNum();break;
+			case "-l":result += FindRowlineNum();break;
+			case "-a":result += FindlinesInfo();break;
 			}
 		}
 		File f = new File(outFile);
@@ -306,6 +357,34 @@ public class WordCount {
 		file.write(result);
 		file.close();
 		System.out.print("输出完毕，可查看指定文件");
+	}
+	void GetFileList(String path){
+		File file = new File(path);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            if (files.length == 0) {
+                //System.out.println("文件夹是空的!");
+                return;
+            } 
+            else {
+                for (File file2 : files) {
+                    if (file2.isDirectory()) {
+                        GetFileList(file2.getAbsolutePath());
+                    } 
+                    else {
+                    	
+                    	String tailName = file2.getAbsolutePath().substring(file2.getAbsolutePath().indexOf('.'), file2.getAbsolutePath().length());
+                    	if(tailName.equals(/*listPath.substring(listPath.indexOf('.'), listPath.length())*/".c")){
+                    		listFiles.add(file2.getAbsolutePath());
+                    	}
+                    }
+                }
+            }
+        } 
+        else {
+            System.out.println("文件不存在!");
+        }
+
 	}
 
 }

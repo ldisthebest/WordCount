@@ -1,1 +1,4 @@
-ad.c,单词数量为：7
+F:\softwareQuality&Test\WordCount\ad.c,单词数:7
+F:\softwareQuality&Test\WordCount\test\A\haha.c,单词数:6
+F:\softwareQuality&Test\WordCount\test\done.c,单词数:1
+F:\softwareQuality&Test\WordCount\test\ld.c,单词数:3
