@@ -1,9 +1,5 @@
-   aasad;
-sdsad;
 
 
-s
-{
-//sada
-/*asdas
-*dasd*/
+
+pig house chicken
+lover dame hooo apple

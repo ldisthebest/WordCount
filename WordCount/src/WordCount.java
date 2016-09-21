@@ -14,6 +14,7 @@ import java.util.ArrayList;
 public class WordCount {
 	private ArrayList keyWord;
 	private ArrayList instru;
+	private ArrayList stopWord;
 	private String stopFile,outFile,readFile;
 	private String fileWord;
 	
@@ -22,6 +23,7 @@ public class WordCount {
 		stopFile = "";
 		outFile = "";
 		readFile = "";
+		stopWord = new ArrayList<String>();
 		keyWord = new ArrayList<String>();
 		instru = new ArrayList<String>();
 
@@ -33,13 +35,10 @@ public class WordCount {
 			return;
 		}		
 		wc.GetFile();
-		System.out.println(wc.fileWord);
-//		char[] cc = wc.fileWord.toCharArray();
-//		for(int i = 0;i<wc.fileWord.length();i++){
-//			System.out.print((int)cc[i]+" ");
-//		}
 		wc.OutputResultToFile();
-		
+		for(int i = 0;i<wc.stopWord.size();i++){
+			System.out.println(wc.stopWord.get(i));
+		}
 	}
 	Boolean InputBaseInstruction() throws IOException{
 		
@@ -123,7 +122,30 @@ public class WordCount {
 		file.close();
 		
 	}
-	int FindCharacterNum(){
+	void GetStopListWords() throws IOException{
+		InputStream file = new FileInputStream(stopFile);
+		int ch = file.read();
+		String word = "";
+		while(ch != -1){
+			if(((char)ch == ' ' || (char)ch == ',' ||(char)ch == '\r'||(char)ch == '\n')&&(!word.equals(""))){
+				stopWord.add(word);
+				word = ""; //清空缓存
+				while((char)ch == ' ' || (char)ch == ','||(char)ch == '\r'||(char)ch == '\n'){
+					ch = file.read();
+				}
+			}
+			if(ch != -1)
+			word += ""+(char)ch;
+			ch = file.read();
+		}
+		if(!word.equals("")){
+			stopWord.add(word);
+			word = ""; //清空缓存
+		}
+		file.close();
+		System.out.println(stopFile);
+	}
+    int FindCharacterNum(){
 		char character[] = fileWord.toCharArray();
 		int num = 0;
 		for(int i = 0;i<character.length;i++){
@@ -138,15 +160,33 @@ public class WordCount {
 		}
 		return false;
 	}
-	int FindWordNum(){
+	Boolean IsWordInStopList(String word) throws IOException{
+		for(int i = 0;i<stopWord.size();i++){
+			if(stopWord.get(i).equals(word)){
+				return true;
+			}
+		}
+		return false;
+	}
+	int FindWordNum() throws IOException{
 		int num = 0;
+		String word = "";
 		char character[] = fileWord.toCharArray();
+		if(!stopFile.equals("")){
+			GetStopListWords();
+		}
 		for(int i = 0;i<character.length;i++){
 			if(IsWordC(character[i])){
-				num++;	
+				word += ""+character[i];
+				num++;i++;
 				while(i<character.length && IsWordC(character[i])){
+					word += ""+character[i];
 					i++;
 				}
+				if(IsWordInStopList(word)){
+					num --;
+				}
+				word = "";
 			}
 			
 		}
@@ -165,11 +205,12 @@ public class WordCount {
 	String FindlinesInfo(){
 		String str = "";
 		int codeLine = 0,emptyLine = 0,noteLine = 0;
-		Boolean isNewLine = true;
+		Boolean isNewLine = true,isNoteAfterCode = false;
 		char chr[] = fileWord.toCharArray();
-		for(int i = 0;i<chr.length;i++){
+		int i;
+		for(i = 0;i<chr.length;i++){
 			//System.out.print((int)chr[i]+" ");
-			if(chr[i] == '/' && chr[i+1] == '/'){
+			if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '/'){
 				if(isNewLine)
 				noteLine ++;
 				while(i<chr.length&&chr[i] != '\n'){
@@ -177,16 +218,20 @@ public class WordCount {
 				}
 				isNewLine = true;
 			}
-			else if(chr[i] == '/' && chr[i+1] == '*'){
+			else if(i+1<chr.length&&chr[i] == '/' && chr[i+1] == '*'){
 				i += 2;
 				while(i<chr.length&&(chr[i] != '*' || chr[i+1] != '/')){
 					if(chr[i] == '\n'){
+						if(isNoteAfterCode){
+							isNoteAfterCode = false;
+						}
+						else
 						noteLine ++;
 						isNewLine = true;
 					}
 					i++;
 				}
-				i+=1;
+				i++;
 				if(1+i<chr.length&&chr[i+1] != '\r'){
 					isNewLine = false;
 				}
@@ -198,10 +243,17 @@ public class WordCount {
 					
 			}
 			else if(i<chr.length-1&&chr[i] != ' ' && chr[i+1] != ' ' && chr[i] != '\r' && chr[i+1] != '\r'){
+				if(!isNoteAfterCode)
 				codeLine++;
-				while(i<chr.length&&chr[i] != '\n'){
+				while(i<chr.length&&chr[i] != '\n'){					
+					if(i<chr.length-1&&chr[i] == '/'&&chr[i+1] == '*'){
+						isNoteAfterCode = true;
+						i--;
+						break;
+					}
 					i++;
 				}
+				if(i<chr.length&&chr[i] == '\n')
 				isNewLine = true;
 			}
 			else{
@@ -214,7 +266,6 @@ public class WordCount {
 				while(i<chr.length&&chr[i] == ' '){
 					i++;
 				}
-				System.out.println("index为"+i);
 				if(i<chr.length&&chr[i] == '\r'){
 					if(!isNewLine){
 						noteLine++;
@@ -225,12 +276,18 @@ public class WordCount {
 					i++;
 				}
 				else if( i == chr.length){
-					emptyLine++;
+					if(!isNewLine){
+						noteLine++;
+					}
+					else
+						emptyLine++;
 				}
 			}
 			
 		}
-		
+		if(i == chr.length && chr[i - 1] == '\n'){
+			emptyLine++;
+		}
 		str += "代码行/空行/注释行:"+codeLine+"/"+emptyLine+"/"+noteLine+"/";
 		return str;
 	}
