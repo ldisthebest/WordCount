@@ -36,7 +36,7 @@ public class WordCount {
 	
 	public static void main(String[] args) throws IOException{
 		WordCount wc = new WordCount();
-		if(!wc.InputBaseInstruction()){
+		if(!wc.InputBaseInstruction(args)){
 			return;
 		}
 		if(!wc.listPath.equals("")){			
@@ -48,19 +48,10 @@ public class WordCount {
 
 
 	}
-	Boolean InputBaseInstruction() throws IOException{
+	Boolean InputBaseInstruction(String[] str) throws IOException{
 		
-		//System.out.print((char)f.read());
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String str = br.readLine();
-		char strC[] = str.toCharArray();
-		for(int j =0;j<strC.length;j++){
-			String keyWords = "";
-			while(j<strC.length&&strC[j] != ' '){
-				keyWords += ""+strC[j];			
-				j++;
-			}
-			keyWord.add(keyWords);
+		for(int strCount = 0;strCount<str.length;strCount++){
+			keyWord.add(str[strCount]);
 		}
 		if(!((String)keyWord.get(0)).equals("wc.exe")){
 			InstruError();
