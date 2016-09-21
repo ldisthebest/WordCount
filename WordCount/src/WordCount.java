@@ -20,7 +20,9 @@ public class WordCount {
 	private String stopFile,outFile,listPath;
 	private ArrayList fileWord;
 	
+	private Boolean isListStyle;
 	public WordCount(){
+		isListStyle = false;
 		stopFile = "";
 		outFile = "";
 		listPath = "";
@@ -71,6 +73,9 @@ public class WordCount {
 			}			
 			if(IsNormalInstru((String)keyWord.get(i))||IsSpecialInstru((String)keyWord.get(i))){
 				instru.add((String)keyWord.get(i));
+				if(IsSpecialInstru((String)keyWord.get(i))){
+					isListStyle = true;
+				}
 			}
 			else if(IsInstruOfStop((String)keyWord.get(i))){
 				instru.add((String)keyWord.get(i));
@@ -359,6 +364,10 @@ public class WordCount {
 		System.out.print("输出完毕，可查看指定文件");
 	}
 	void GetFileList(String path){
+		if(!isListStyle && !listPath.equals("")){
+			System.out.println("没有-s指令,错误！");
+			return;
+		}
 		File file = new File(path);
         if (file.exists()) {
             File[] files = file.listFiles();

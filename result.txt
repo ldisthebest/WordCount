@@ -1,4 +1,16 @@
+F:\softwareQuality&Test\WordCount\ad.c,字符数:42
+F:\softwareQuality&Test\WordCount\test\A\haha.c,字符数:23
+F:\softwareQuality&Test\WordCount\test\done.c,字符数:2
+F:\softwareQuality&Test\WordCount\test\ld.c,字符数:11
 F:\softwareQuality&Test\WordCount\ad.c,单词数:7
 F:\softwareQuality&Test\WordCount\test\A\haha.c,单词数:6
 F:\softwareQuality&Test\WordCount\test\done.c,单词数:1
 F:\softwareQuality&Test\WordCount\test\ld.c,单词数:3
+F:\softwareQuality&Test\WordCount\ad.c,总行数:4
+F:\softwareQuality&Test\WordCount\test\A\haha.c,总行数:3
+F:\softwareQuality&Test\WordCount\test\done.c,总行数:0
+F:\softwareQuality&Test\WordCount\test\ld.c,总行数:0
+F:\softwareQuality&Test\WordCount\ad.c,代码行/空行/注释行:2/3/0
+F:\softwareQuality&Test\WordCount\test\A\haha.c,代码行/空行/注释行:3/1/0
+F:\softwareQuality&Test\WordCount\test\done.c,代码行/空行/注释行:1/0/0
+F:\softwareQuality&Test\WordCount\test\ld.c,代码行/空行/注释行:1/0/0
