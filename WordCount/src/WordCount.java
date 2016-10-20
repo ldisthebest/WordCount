@@ -29,19 +29,11 @@ public class WordCount {
 	
 	public static void main(String[] args) throws IOException{
 		WordCount wc = new WordCount(3);
-		if(!wc.InputBaseInstruction()){
+		if(!wc.InputBaseInstruction()||!wc.InputOutInstruction()){
 			return;
 		}		
 		wc.GetFile();
-		String result = "";
-		for(int num = 1;num < wc.keyWord.size()-1;num++){
-			switch((String)wc.keyWord.get(num)){
-			case "-c":result += "字符数量为："+wc.FindCharacterNum()+"\n";break;
-			case "-w":result += "单词数量为："+wc.FindWordNum()+"\n";break;
-			case "-l":result += "总行数为："+wc.FindRowlineNum()+"\n";break;
-			}
-		}
-		wc.OutputNumToFile(result);
+		wc.OutputResultToFile();
 		
 		//System.out.println(wc.fileWord);
 		//System.out.println(wc.FindRowlineNum());
@@ -168,10 +160,18 @@ public class WordCount {
 		}
 		return num+1;
 	}
-	void OutputNumToFile(String tip) throws IOException{
+	void OutputResultToFile() throws IOException{
+		String result = "";
+		for(int num = 1;num < keyWord.size()-1;num++){
+			switch((String)keyWord.get(num)){
+			case "-c":result += "字符数量为："+FindCharacterNum()+"\n";break;
+			case "-w":result += "单词数量为："+FindWordNum()+"\n";break;
+			case "-l":result += "总行数为："+FindRowlineNum()+"\n";break;
+			}
+		}
 		File f = new File(keyWordOut[2]);
 		FileWriter file = new FileWriter(f);
-		file.write(tip);
+		file.write(result);
 		file.close();
 	}
 
